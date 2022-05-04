@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ivi)#5o*hf93i08lgvmn1ocw#p1gbcbo1pw=3flqes-f51r4#a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.184.137', '127.0.0.1']
 
 
 # Application definition
@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # My Applications
+    'frp_service',
+    'node',
+
+    # Custom Auth Model
+    'frp_user',
 ]
 
 MIDDLEWARE = [
