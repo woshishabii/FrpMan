@@ -131,3 +131,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'frp_user.FrpUser'
+
+# Custom Settings
+
+FRPMAN_VERSION = '0.0.1'
+FRPMAN_BUILD = 'alpha'
+FRPMAN_NAME = 'Frp Manager'
+
+FRPMAN_NODE_VERSION = FRPMAN_VERSION
+FRPMAN_UPDATE_REQUIRED = False
