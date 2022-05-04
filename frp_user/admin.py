@@ -7,8 +7,11 @@ from .models import FrpUser
 # Register your models here.
 
 
-class FrpUserAdmin:
+class FrpUserAdmin(UserAdmin):
     add_form = FrpUserCreationForm
     form = FrpUserChangeForm
     model = FrpUser
     list_display = ['username', 'email', 'gold_coin', 'silver_coin']
+
+
+admin.site.register(FrpUser, FrpUserAdmin)
