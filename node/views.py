@@ -1,8 +1,10 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import HttpResponse
 from django.http import JsonResponse
 from django.conf import settings
 
-import json
+from django.shortcuts import get_object_or_404
+
+from . import models
 
 # Create your views here.
 
@@ -22,5 +24,15 @@ def node_server_info(request):
             'version': settings.FRPMAN_NODE_VERSION,
             'update': settings.FRPMAN_UPDATE_REQUIRED,
         },
+    }
+    return JsonResponse(content)
+
+
+def node_node_api(request, node_uuid):
+    model = get_object_or_404(models.Node, identifier=node_uuid)
+    content = {
+        'basic': {
+            'uuid': model.identifier,
+        }
     }
     return JsonResponse(content)

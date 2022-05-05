@@ -11,7 +11,7 @@ class Node(models.Model):
     """
 
     # Basic Information
-    identifier = models.UUIDField(primary_key=True, default=uuid.uuid5, editable=False)
+    identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pre_name = models.CharField(max_length=10)
     display_name = models.CharField(max_length=10)
     domain_name = models.CharField(max_length=100)
