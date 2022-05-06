@@ -90,6 +90,13 @@ class Main:
         # print(info.text)
         if 'application/json' not in info.headers['Content-Type']:
             self.invalid_json_format()
+        info_j = json.loads(info.text)
+        try:
+            if not info_j['frp_man_valid']:
+                self.invalid_json_format()
+        except KeyError:
+            self.invalid_json_format()
+        print('Valid')
 
 
 def dev():
