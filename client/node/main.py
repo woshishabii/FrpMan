@@ -1,3 +1,5 @@
+import requests
+
 import argparse
 
 import easygui
@@ -23,6 +25,11 @@ class Settings:
             'main_server': '',
             'node_uuid': '',
             'password': ''
+        }
+        # Don't modify while running
+        self.settings['LOCAL_INFO'] = {
+            'version': '0.0.1',
+            'build': 'alpha',
         }
 
     def save(self):
@@ -68,11 +75,19 @@ class Main:
         )
         raise ValueError('Wrong Configuration')
 
+    def fetch_main_server_info(self):
+        print('Fetching Server Info')
+        info = requests.get(f'{self.settings.settings["basic"]["main_server"]}/node/server_info/')
+        # print(info.text)
+        if 'application/json' not in info.headers['Content-Type']:
+            raise ValueError(f'Invalid Content-Type:{info.headers["Content-Type"]}, wrong server address?')
+
 
 def dev():
     root = Main()
     if root.settings.NEW_CONFIG:
         root.configuration()
+    root.fetch_main_server_info()
 
 
 def main():
