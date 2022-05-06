@@ -70,17 +70,26 @@ class Main:
     def wrong_configuration():
         easygui.msgbox(
             msg='Wrong Configuration, exiting now',
-            title='Error',
+            title='Error - Invalid Config',
             ok_button='Exit'
         )
         raise ValueError('Wrong Configuration')
+
+    @staticmethod
+    def invalid_json_format():
+        easygui.msgbox(
+            msg='INVALID Response from Main Server, exiting now',
+            title='Error - Invalid Server',
+            ok_button='Exit'
+        )
+        raise ValueError('Invalid Server')
 
     def fetch_main_server_info(self):
         print('Fetching Server Info')
         info = requests.get(f'{self.settings.settings["basic"]["main_server"]}/node/server_info/')
         # print(info.text)
         if 'application/json' not in info.headers['Content-Type']:
-            raise ValueError(f'Invalid Content-Type:{info.headers["Content-Type"]}, wrong server address?')
+            self.invalid_json_format()
 
 
 def dev():

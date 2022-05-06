@@ -15,6 +15,7 @@ def hello(request):
 
 def node_server_info(request):
     content = {
+        'frp_man_valid': True,
         'info': {
             'version': settings.FRPMAN_VERSION,
             'build': settings.FRPMAN_BUILD,
