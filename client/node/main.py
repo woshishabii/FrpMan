@@ -1,33 +1,36 @@
 import argparse
 
-import requests
-
 import easygui
 
 import json
 import uuid
 
+import os
+
 
 class Settings:
     def __init__(self):
-        pass
+        self.settings = {}
+        if os.path.exists('config.json'):
+            self.load()
+            self.NEW_CONFIG = False
+        else:
+            self.default()
+            self.NEW_CONFIG = True
 
-    class Basic:
-        main_server = str()
-        password = str()
-        node_uuid = uuid.UUID('12345678-abcd-abcd-abcd-123456789011')
+    def default(self):
+        self.settings['basic'] = {
+            'main_server': '',
+            'node_uuid': '',
+            'password': ''
+        }
 
     def save(self):
         with open('config.json', 'w') as f_obj:
-            config = {
-                'main_server': self.Basic.main_server,
-                'password': self.Basic.password,
-                'uuid': str(self.Basic.node_uuid),
-            }
-            json.dump(config, f_obj)
+            json.dump(self.settings, f_obj)
 
-    def list(self):
-        return dir(self.Basic)
+    def load(self):
+        print('loaded')
 
 
 class Main:
@@ -35,43 +38,39 @@ class Main:
         self.settings = Settings()
 
     def configuration(self):
-        main_server = easygui.enterbox(
-            msg='Please enter FrpMan Main Server Address',
+        basic_info = easygui.multenterbox(
+            msg='Enter Basic Info About the Node',
             title='Configuration',
-            default='http://example.com',
-            strip=True
+            fields=['FrpMan Main Server', 'Node UUID', 'Password'],
+            values=['http://example.com', str(uuid.uuid4()), 'Password'],
         )
-        if main_server is None:
-            return
-        password = easygui.enterbox(
-            msg='Please Enter Server Management Password',
-            title='Configuration',
-            default='Password',
+        # print(basic_info)
+        if basic_info is None:
+            self.wrong_configuration()
+        for _ in basic_info:
+            if _ == '':
+                self.wrong_configuration()
+        (
+            self.settings.settings['basic']['main_server'],
+            self.settings.settings['basic']['node_uuid'],
+            self.settings.settings['basic']['password']
+        ) = basic_info
+        self.settings.save()
+
+    @staticmethod
+    def wrong_configuration():
+        easygui.msgbox(
+            msg='Wrong Configuration, exiting now',
+            title='Error',
+            ok_button='Exit'
         )
-        if password is None:
-            return
-        node_uuid = easygui.enterbox(
-            msg='Please Enter Node\'s UUID',
-            title='Configuration',
-            default=str(uuid.uuid4()),
-        )
-        if node_uuid is None:
-            return
-        if main_server and password and node_uuid:
-            self.settings.Basic.main_server = main_server
-            self.settings.Basic.password = password
-            self.settings.Basic.node_uuid = uuid.UUID(node_uuid)
-            self.settings.save()
-            try:
-                server_info = requests.get(f"{self.settings.Basic.main_server}/node/node_api")
-            except ConnectionError:
-                pass
+        raise ValueError('Wrong Configuration')
 
 
 def dev():
     root = Main()
-    print(list(root.settings))
-    root.configuration()
+    if root.settings.NEW_CONFIG:
+        root.configuration()
 
 
 def main():
