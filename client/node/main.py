@@ -30,7 +30,9 @@ class Settings:
             json.dump(self.settings, f_obj)
 
     def load(self):
-        print('loaded')
+        with open('config.json', 'r') as f_obj:
+            self.settings = json.load(f_obj)
+            # print(self.settings)
 
 
 class Main:
