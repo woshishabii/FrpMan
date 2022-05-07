@@ -73,7 +73,7 @@ class Main:
             title='Error - Invalid Config',
             ok_button='Exit'
         )
-        raise ValueError('Wrong Configuration')
+        exit(ValueError('Wrong Configuration'))
 
     @staticmethod
     def invalid_json_format():
@@ -102,7 +102,7 @@ class Main:
         try:
             if not info_j['frp_man_valid']:
                 self.invalid_json_format()
-        except KeyError:
+        except KeyError as e:
             self.invalid_json_format()
         print('Valid')
 
