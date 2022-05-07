@@ -84,9 +84,17 @@ class Main:
         )
         raise ValueError('Invalid Server')
 
+    @staticmethod
+    def no_connection(e):
+        easygui.msgbox(msg=e)
+        exit(e)
+
     def fetch_main_server_info(self):
         print('Fetching Server Info')
-        info = requests.get(f'{self.settings.settings["basic"]["main_server"]}/node/server_info/')
+        try:
+            info = requests.get(f'{self.settings.settings["basic"]["main_server"]}/node/server_info/')
+        except requests.exceptions.ConnectionError as e:
+            self.no_connection(e)
         # print(info.text)
         if 'application/json' not in info.headers['Content-Type']:
             self.invalid_json_format()
