@@ -14,6 +14,10 @@ def hello(request):
 
 
 def node_server_info(request):
+    nodes = models.Node.objects.all()
+    uuid_list = []
+    for node in nodes:
+        uuid_list.append(node.identifier)
     content = {
         'frp_man_valid': True,
         'info': {
@@ -25,6 +29,7 @@ def node_server_info(request):
             'version': settings.FRPMAN_NODE_VERSION,
             'update': settings.FRPMAN_UPDATE_REQUIRED,
         },
+        'node_list': uuid_list,
     }
     return JsonResponse(content)
 

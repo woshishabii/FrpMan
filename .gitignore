@@ -3,6 +3,10 @@ venv
 .idea
 
 db.sqlite3
+/client/node/config.json
+
+__pycache__
+
 *.pyc
 
 /client/node/config.json
