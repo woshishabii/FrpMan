@@ -1,117 +1,79 @@
-import requests
-
 import argparse
+import os
 
 import easygui
 
-import json
 import uuid
 
-import os
+import json
 
 
-class Settings:
+CONFIG_STRUCTURE = {
+    'basic': [
+        'main_server',
+        'node_uuid',
+        'server_password',
+    ]
+}
+
+
+class FrpManExceptions(Exception):
+    pass
+
+
+class Config:
     def __init__(self):
+        # Init Basic Var
         self.settings = {}
-        if os.path.exists('config.json'):
-            self.load()
+        # Check Configuration File
+        if os.path.exists('configs.json'):
             self.NEW_CONFIG = False
         else:
-            self.default()
             self.NEW_CONFIG = True
 
-    def default(self):
+    def load(self):
+        # Read config form file
+        with open('configs.json', 'r') as f_obj:
+            file = json.load(f_obj)
+            if not self.validate_config(file):
+                self.init_new_config()
+            else:
+                self.settings = file.copy()
+
+    def init_new_config(self):
         self.settings['basic'] = {
             'main_server': '',
             'node_uuid': '',
-            'password': ''
+            'server_password': '',
         }
-        # Don't modify while running
-        self.settings['LOCAL_INFO'] = {
-            'version': '0.0.1',
-            'build': 'alpha',
-        }
+        self.configuration_window()
 
-    def save(self):
-        with open('config.json', 'w') as f_obj:
-            json.dump(self.settings, f_obj)
-
-    def load(self):
-        with open('config.json', 'r') as f_obj:
-            self.settings = json.load(f_obj)
-            # print(self.settings)
-
-
-class Main:
-    def __init__(self):
-        self.settings = Settings()
-
-    def configuration(self):
-        basic_info = easygui.multenterbox(
-            msg='Enter Basic Info About the Node',
-            title='Configuration',
-            fields=['FrpMan Main Server', 'Node UUID', 'Password'],
-            values=['http://example.com', str(uuid.uuid4()), 'Password'],
+    def configuration_window(self):
+        user_input = easygui.multenterbox(
+            msg="Type Basic Information about this Node Server",
+            title="Setup",
+            fields=['Main Server Address', 'Node UUID', 'Password'],
+            values=['http://example.com', str(uuid.uuid4()), 'PASSWORD'],
         )
-        # print(basic_info)
-        if basic_info is None:
-            self.wrong_configuration()
-        for _ in basic_info:
-            if _ == '':
-                self.wrong_configuration()
-        (
-            self.settings.settings['basic']['main_server'],
-            self.settings.settings['basic']['node_uuid'],
-            self.settings.settings['basic']['password']
-        ) = basic_info
-        self.settings.save()
+        if user_input is None:
+            raise FrpManExceptions
 
     @staticmethod
-    def wrong_configuration():
-        easygui.msgbox(
-            msg='Wrong Configuration, exiting now',
-            title='Error - Invalid Config',
-            ok_button='Exit'
-        )
-        exit(ValueError('Wrong Configuration'))
-
-    @staticmethod
-    def invalid_json_format():
-        easygui.msgbox(
-            msg='INVALID Response from Main Server, exiting now',
-            title='Error - Invalid Server',
-            ok_button='Exit'
-        )
-        raise ValueError('Invalid Server')
-
-    @staticmethod
-    def no_connection(e):
-        easygui.msgbox(msg=e)
-        exit(e)
-
-    def fetch_main_server_info(self):
-        print('Fetching Server Info')
-        try:
-            info = requests.get(f'{self.settings.settings["basic"]["main_server"]}/node/server_info/')
-        except requests.exceptions.ConnectionError as e:
-            self.no_connection(e)
-        # print(info.text)
-        if 'application/json' not in info.headers['Content-Type']:
-            self.invalid_json_format()
-        info_j = json.loads(info.text)
-        try:
-            if not info_j['frp_man_valid']:
-                self.invalid_json_format()
-        except KeyError as e:
-            self.invalid_json_format()
-        print('Valid')
+    def validate_config(config: dict) -> bool:
+        if type(config) != dict:
+            return False
+        if 'basic' not in config:
+            return False
+        for _ in CONFIG_STRUCTURE['basic']:
+            if _ not in config['basic']:
+                return False
+        return True
 
 
 def dev():
-    root = Main()
-    if root.settings.NEW_CONFIG:
-        root.configuration()
-    root.fetch_main_server_info()
+    # Startup
+    # Configuration
+    pass
 
 
 def main():
