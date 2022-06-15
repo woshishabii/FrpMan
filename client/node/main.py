@@ -21,6 +21,33 @@ class FrpManExceptions(Exception):
     pass
 
 
+class Config:
+    def __init__(self):
+        # Initial a new config
+        # First, we should try to load config from file
+        if os.path.exists('config.json'):
+            # If it exists, we should validate
+            self.NEW_CONFIG = False
+            with open('config.json', 'r') as c_obj:
+                self.config = json.load(c_obj)
+                if self.validate_config(self.config):
+                    pass
+                else:
+                    raise FrpManExceptions('Invalid Config')
+        else:
+            self.NEW_CONFIG = True
+        pass
+
+    @staticmethod
+    def validate_config(config: dict) -> bool:
+        if type(config) is not dict:
+            return False
+        return True
+
+    def initial_new_config(self):
+        pass
+
+
 def dev():
     # Startup
     # Configuration
