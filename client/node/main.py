@@ -23,8 +23,8 @@ class FrpManExceptions(Exception):
     pass
 
 
-class Config:
-    """ Config Class
+class StaticConfig:
+    """ StaticConfig Class
     Basic Configuration of FrpMan Node Client
     """
     def __init__(self):
@@ -42,7 +42,7 @@ class Config:
             if self.validate_config(self.config):
                 pass
             else:
-                raise FrpManExceptions('Invalid Config')
+                raise FrpManExceptions('Invalid StaticConfig')
         else:
             self.NEW_CONFIG = True
             # Ask user to fill the form
@@ -92,10 +92,20 @@ class Config:
             json.dump(self.config, c_obj)
 
 
+class FrpMan:
+    """ FrpMan Main Class
+    Defines the most during the program
+    """
+    def __init__(self):
+        """ Init method
+        Create a new instance of FrpMan"""
+        self.config = StaticConfig()
+
+
 def dev():
     # Startup
     # Configuration
-    c = Config()
+    pass
 
 
 def main():
