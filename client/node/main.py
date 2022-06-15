@@ -26,6 +26,7 @@ class FrpManExceptions(Exception):
 class StaticConfig:
     """ StaticConfig Class
     Basic Configuration of FrpMan Node Client
+    these configs shouldn't be changed while running
     """
     def __init__(self):
         """ Initial Method
@@ -92,6 +93,29 @@ class StaticConfig:
             json.dump(self.config, c_obj)
 
 
+class DynamicConfig:
+    """ DynamicConfig Class
+    These configs are usually gotten from the server on startup
+    Sync with the main server
+    """
+    def __init__(self, static: StaticConfig):
+        """ Initial Method
+        Creates a DynamicConfig Instance
+        and Get Update From the Server"""
+        self.response = None
+        self.static = static
+
+    def get_data(self):
+        """ Get Data From Main Server
+        Including:
+        /node/server_info API
+        /node/node_api API
+        """
+        self.response = json.loads(requests.get(f'{self.static.config["basic"]["main_server"]}/node/server_info/').text)
+        if self.response:
+            pass
+
+
 class FrpMan:
     """ FrpMan Main Class
     Defines the most during the program
@@ -105,7 +129,10 @@ class FrpMan:
 def dev():
     # Startup
     # Configuration
-    pass
+    sc = StaticConfig()
+    dc = DynamicConfig(sc)
+    dc.get_data()
+    print(dc.response)
 
 
 def main():
