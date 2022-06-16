@@ -102,8 +102,14 @@ class DynamicConfig:
         """ Initial Method
         Creates a DynamicConfig Instance
         and Get Update From the Server"""
-        self.response = None
+
+        # Temp Var
+        self.response = dict
+
+        self.valid = bool
         self.static = static
+
+        self.server_info = {}
 
     def get_data(self):
         """ Get Data From Main Server
@@ -112,8 +118,17 @@ class DynamicConfig:
         /node/node_api API
         """
         self.response = json.loads(requests.get(f'{self.static.config["basic"]["main_server"]}/node/server_info/').text)
-        if self.response:
-            pass
+        # Validate Server
+        if 'frp_man_valid' in self.response:
+            print('OK')
+            self.valid = True
+        else:
+            self.valid = False
+            raise FrpManExceptions('Invalid Server Response')
+        self.server_info = self.response.copy()
+        # Get NodeAPI
+        url = f'{self.static.config["basic"]["main_server"]}'
+        self.response = json.loads(requests.get(f'{self.static.config["basic"]["main_server"]}/node/node_api/{self}').text)
 
 
 class FrpMan:
@@ -132,7 +147,6 @@ def dev():
     sc = StaticConfig()
     dc = DynamicConfig(sc)
     dc.get_data()
-    print(dc.response)
 
 
 def main():
