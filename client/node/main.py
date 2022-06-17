@@ -1,5 +1,6 @@
 import argparse
 import os
+import platform
 
 import easygui
 
@@ -9,7 +10,6 @@ import json
 
 import requests
 
-
 CONFIG_STRUCTURE = {
     'basic': [
         'main_server',
@@ -17,6 +17,7 @@ CONFIG_STRUCTURE = {
         'server_password',
     ]
 }
+FILEDIR = 'source'
 
 
 class FrpManExceptions(Exception):
@@ -101,15 +102,13 @@ class DynamicConfig:
     def __init__(self, static: StaticConfig):
         """ Initial Method
         Creates a DynamicConfig Instance
-        and Get Update From the Server"""
-
-        # Temp Var
-        self.response = dict
-
-        self.valid = bool
+        and Get Update From the Server """
+        self.valid = False
+        self.response = {}
         self.static = static
-
         self.server_info = {}
+        self.node_info = {}
+        self.get_data()
 
     def get_data(self):
         """ Get Data From Main Server
@@ -117,18 +116,33 @@ class DynamicConfig:
         /node/server_info API
         /node/node_api API
         """
+        # Get server_info API
         self.response = json.loads(requests.get(f'{self.static.config["basic"]["main_server"]}/node/server_info/').text)
-        # Validate Server
         if 'frp_man_valid' in self.response:
-            print('OK')
             self.valid = True
+            self.server_info = self.response.copy()
+            print('OK')
         else:
             self.valid = False
-            raise FrpManExceptions('Invalid Server Response')
-        self.server_info = self.response.copy()
-        # Get NodeAPI
-        url = f'{self.static.config["basic"]["main_server"]}'
-        self.response = json.loads(requests.get(f'{self.static.config["basic"]["main_server"]}/node/node_api/{self}').text)
+            raise FrpManExceptions('Invalid Server Response, is the main server down?')
+        # Get node_api
+        url = f'{self.static.config["basic"]["main_server"]}/node/node_api/{self.static.config["basic"]["node_uuid"]}|{self.static.config["basic"]["server_password"]}'
+        self.response = json.loads(requests.get(url).text)
+        if 'error' in self.response:
+            raise FrpManExceptions(self.response['error'])
+        self.node_info = self.response.copy()
+
+
+class Channel:
+    """ Channel Class
+    Defines Each Channel """
+
+    def __init__(self):
+        pass
+
+    def generate_files(self):
+        """ Generates FRPS Files """
+        pass
 
 
 class FrpMan:
@@ -138,15 +152,37 @@ class FrpMan:
     def __init__(self):
         """ Init method
         Create a new instance of FrpMan"""
-        self.config = StaticConfig()
+        self.system = ''
+        self.machine = ''
+        self.static_config = StaticConfig()
+        self.dynamic_config = DynamicConfig(self.static_config)
+
+    def start(self):
+        pass
+
+    def check_files(self):
+        """ Check Files Function
+        Check and download automatically files needed for FrpMan
+        List of files
+        - Frps Bin File
+        - Config File Template(Optional)
+        """
+        # Create File Dir
+        if not os.path.exists(FILEDIR):
+            print('[LOG] FILE DIR not exists, Creating a new one.')
+            os.mkdir(FILEDIR)
+        # Check FRPS Files nad versions
+        # Check Platform
+        # Tested on Windows 11, Kali Linux
+        self.system = platform.system()
+        self.machine = platform.machine()
+        print(f'[LOG] Detected Environment: {self.system} - {self.machine}')
 
 
 def dev():
-    # Startup
-    # Configuration
-    sc = StaticConfig()
-    dc = DynamicConfig(sc)
-    dc.get_data()
+    # For test only
+    fm = FrpMan()
+    fm.check_files()
 
 
 def main():
