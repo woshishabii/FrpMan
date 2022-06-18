@@ -4,6 +4,7 @@ venv
 
 db.sqlite3
 /client/node/config.json
+/client/node/source/
 
 __pycache__
 

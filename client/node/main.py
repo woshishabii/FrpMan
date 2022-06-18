@@ -7,6 +7,8 @@ import easygui
 import uuid
 
 import json
+import tarfile
+import hashlib
 
 import requests
 
@@ -165,18 +167,74 @@ class FrpMan:
         Check and download automatically files needed for FrpMan
         List of files
         - Frps Bin File
-        - Config File Template(Optional)
+        - Checksum
         """
         # Create File Dir
         if not os.path.exists(FILEDIR):
             print('[LOG] FILE DIR not exists, Creating a new one.')
             os.mkdir(FILEDIR)
+        # Create Frps Files Dir
+        if not os.path.exists(f'{FILEDIR}/frps'):
+            print('[LOG] FRPS DIR not exists, Creating one')
+            os.mkdir(f'{FILEDIR}/frps')
+        if not os.path.exists(f'{FILEDIR}/frps/archive'):
+            os.mkdir(f'{FILEDIR}/frps/archive')
         # Check FRPS Files nad versions
         # Check Platform
         # Tested on Windows 11, Kali Linux
-        self.system = platform.system()
-        self.machine = platform.machine()
+        self.system = platform.system().lower()
+        self.machine = platform.machine().lower()
+        if self.machine == 'x86_64':
+            self.machine = 'amd64'
         print(f'[LOG] Detected Environment: {self.system} - {self.machine}')
+        if self.system == 'windows':
+            self.dl_name = f'frp_0.41.0_{self.system}_{self.machine}.zip'
+        else:
+            self.dl_name = f'frp_0.41.0_{self.system}_{self.machine}.tar.gz'
+        self.dl_url = f'https://github.com/fatedier/frp/releases/download/v0.41.0/{self.dl_name}'
+        print(f'[LOG] Downloading FRPS File: {self.dl_url}')
+        if os.path.exists(f'./source/frps/archive/{self.dl_name}'):
+            if input('[INFO] Older Download Detected, Remove?') == 'y':
+                os.remove(f'./source/frps/archive/{self.dl_name}')
+                self.dl = requests.get(self.dl_url, allow_redirects=True)
+                with open(f'./source/frps/archive/{self.dl_name}', 'wb') as d_obj:
+                    d_obj.write(self.dl.content)
+            else:
+                pass
+        else:
+            self.dl = requests.get(self.dl_url, allow_redirects=True)
+            with open(f'./source/frps/archive/{self.dl_name}', 'wb') as d_obj:
+                d_obj.write(self.dl.content)
+        self.dl_checksum_url = 'https://github.com/fatedier/frp/releases/download/v0.41.0/frp_0.41.0_sha256_checksums.txt'
+        print(f'[LOG] Downloading FRPS Checksum File: {self.dl_checksum_url}')
+        if os.path.exists(f'./source/frps/frp_sha256_checksums.txt'):
+            if input('[INFO] Older Download Detected, Remove?') == 'y':
+                os.remove('./source/frps/frp_sha256_checksums.txt')
+                self.dl_checksum = requests.get(self.dl_checksum_url, allow_redirects=True)
+                with open(f'./source/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
+                    cs_obj.write(self.dl_checksum.text)
+            else:
+                pass
+        else:
+            self.dl_checksum = requests.get(self.dl_checksum_url, allow_redirects=True)
+            with open(f'./source/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
+                cs_obj.write(self.dl_checksum.text)
+        # Validate File
+        with open('./source/frps/frp_sha256_checksums.txt') as cs_obj:
+            for line in cs_obj:
+                if line.strip().split()[1] == self.dl_name:
+                    print(f'[LOG] Expected SHA256: {line.strip().split()[0]}')
+                    self.dl_sha256 = line.strip().split()[0]
+                    break
+        with open(f'./source/frps/archive/{self.dl_name}', 'rb') as dl_obj:
+            self.dl_real_sha256 = hashlib.new('sha256', dl_obj.read()).hexdigest()
+            print(f'[LOG] Actual Checksum: {self.dl_real_sha256}')
+            if not self.dl_real_sha256 == self.dl_sha256:
+                raise FrpManExceptions('Mismatched Checksum')
+            else:
+                print('[LOG] Matched SHA256')
+        # Extract Files
+        print(f'[LOG] Extracting {self.dl_name}')
 
 
 def dev():
