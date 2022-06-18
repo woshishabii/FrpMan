@@ -23,6 +23,13 @@ CONFIG_STRUCTURE = {
 FILEDIR = 'source'
 
 
+def execute_shell(script: str) -> str:
+    result = os.popen(script)
+    text = result.read()
+    result.close()
+    return text
+
+
 class FrpManExceptions(Exception):
     pass
 
@@ -190,8 +197,10 @@ class FrpMan:
         print(f'[LOG] Detected Environment: {self.system} - {self.machine}')
         if self.system == 'windows':
             self.dl_name = f'frp_0.41.0_{self.system}_{self.machine}.zip'
+            self.dl_dir = self.dl_name.replace('.zip', '')
         else:
             self.dl_name = f'frp_0.41.0_{self.system}_{self.machine}.tar.gz'
+            self.dl_dir = self.dl_name.replace('.tar.gz', '')
         self.dl_url = f'https://github.com/fatedier/frp/releases/download/v0.41.0/{self.dl_name}'
         print(f'[LOG] Downloading FRPS File: {self.dl_url}')
         if os.path.exists(f'./source/frps/archive/{self.dl_name}'):
@@ -242,6 +251,7 @@ class FrpMan:
         elif self.dl_name.endswith('.zip'):
             with zipfile.ZipFile(f'./source/frps/archive/{self.dl_name}') as zf_obj:
                 zf_obj.extractall('./source/frps')
+        print(f'[LOG] FRPS Version: {execute_shell("./source/frps/"+self.dl_dir+"/frps -v").strip()}')
 
 
 def dev():
