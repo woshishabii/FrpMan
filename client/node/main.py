@@ -8,6 +8,7 @@ import uuid
 
 import json
 import tarfile
+import zipfile
 import hashlib
 
 import requests
@@ -235,6 +236,12 @@ class FrpMan:
                 print('[LOG] Matched SHA256')
         # Extract Files
         print(f'[LOG] Extracting {self.dl_name}')
+        if self.dl_name.endswith('.tar.gz'):
+            self.dl_tf = tarfile.open(f'./source/frps/archive/{self.dl_name}')
+            self.dl_tf.extractall('./source/frps/')
+        elif self.dl_name.endswith('.zip'):
+            with zipfile.ZipFile(f'./source/frps/archive/{self.dl_name}') as zf_obj:
+                zf_obj.extractall('./source/frps')
 
 
 def dev():
