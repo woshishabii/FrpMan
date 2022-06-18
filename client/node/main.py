@@ -203,40 +203,40 @@ class FrpMan:
             self.dl_dir = self.dl_name.replace('.tar.gz', '')
         self.dl_url = f'https://github.com/fatedier/frp/releases/download/v0.41.0/{self.dl_name}'
         print(f'[LOG] Downloading FRPS File: {self.dl_url}')
-        if os.path.exists(f'./source/frps/archive/{self.dl_name}'):
+        if os.path.exists(f'./{FILEDIR}/frps/archive/{self.dl_name}'):
             if input('[INFO] Older Download Detected, Remove?') == 'y':
-                os.remove(f'./source/frps/archive/{self.dl_name}')
+                os.remove(f'./{FILEDIR}/frps/archive/{self.dl_name}')
                 self.dl = requests.get(self.dl_url, allow_redirects=True)
-                with open(f'./source/frps/archive/{self.dl_name}', 'wb') as d_obj:
+                with open(f'./{FILEDIR}/frps/archive/{self.dl_name}', 'wb') as d_obj:
                     d_obj.write(self.dl.content)
             else:
                 pass
         else:
             self.dl = requests.get(self.dl_url, allow_redirects=True)
-            with open(f'./source/frps/archive/{self.dl_name}', 'wb') as d_obj:
+            with open(f'./{FILEDIR}/frps/archive/{self.dl_name}', 'wb') as d_obj:
                 d_obj.write(self.dl.content)
         self.dl_checksum_url = 'https://github.com/fatedier/frp/releases/download/v0.41.0/frp_0.41.0_sha256_checksums.txt'
         print(f'[LOG] Downloading FRPS Checksum File: {self.dl_checksum_url}')
-        if os.path.exists(f'./source/frps/frp_sha256_checksums.txt'):
+        if os.path.exists(f'./{FILEDIR}/frps/frp_sha256_checksums.txt'):
             if input('[INFO] Older Download Detected, Remove?') == 'y':
-                os.remove('./source/frps/frp_sha256_checksums.txt')
+                os.remove(f'./{FILEDIR}/frps/frp_sha256_checksums.txt')
                 self.dl_checksum = requests.get(self.dl_checksum_url, allow_redirects=True)
-                with open(f'./source/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
+                with open(f'./{FILEDIR}/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
                     cs_obj.write(self.dl_checksum.text)
             else:
                 pass
         else:
             self.dl_checksum = requests.get(self.dl_checksum_url, allow_redirects=True)
-            with open(f'./source/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
+            with open(f'./{FILEDIR}/frps/frp_sha256_checksums.txt', 'w') as cs_obj:
                 cs_obj.write(self.dl_checksum.text)
         # Validate File
-        with open('./source/frps/frp_sha256_checksums.txt') as cs_obj:
+        with open(f'./{FILEDIR}/frps/frp_sha256_checksums.txt') as cs_obj:
             for line in cs_obj:
                 if line.strip().split()[1] == self.dl_name:
                     print(f'[LOG] Expected SHA256: {line.strip().split()[0]}')
                     self.dl_sha256 = line.strip().split()[0]
                     break
-        with open(f'./source/frps/archive/{self.dl_name}', 'rb') as dl_obj:
+        with open(f'./{FILEDIR}/frps/archive/{self.dl_name}', 'rb') as dl_obj:
             self.dl_real_sha256 = hashlib.new('sha256', dl_obj.read()).hexdigest()
             print(f'[LOG] Actual Checksum: {self.dl_real_sha256}')
             if not self.dl_real_sha256 == self.dl_sha256:
@@ -246,12 +246,12 @@ class FrpMan:
         # Extract Files
         print(f'[LOG] Extracting {self.dl_name}')
         if self.dl_name.endswith('.tar.gz'):
-            self.dl_tf = tarfile.open(f'./source/frps/archive/{self.dl_name}')
-            self.dl_tf.extractall('./source/frps/')
+            self.dl_tf = tarfile.open(f'./{FILEDIR}/frps/archive/{self.dl_name}')
+            self.dl_tf.extractall(f'./{FILEDIR}/frps/')
         elif self.dl_name.endswith('.zip'):
-            with zipfile.ZipFile(f'./source/frps/archive/{self.dl_name}') as zf_obj:
-                zf_obj.extractall('./source/frps')
-        print(f'[LOG] FRPS Version: {execute_shell("./source/frps/"+self.dl_dir+"/frps -v").strip()}')
+            with zipfile.ZipFile(f'./{FILEDIR}/frps/archive/{self.dl_name}') as zf_obj:
+                zf_obj.extractall(f'./{FILEDIR}/frps')
+        print(f'[LOG] FRPS Version: {execute_shell(f"./{FILEDIR}/frps/"+self.dl_dir+"/frps -v").strip()}')
 
 
 def dev():
